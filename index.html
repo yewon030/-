@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>쉿 ! Yewon’s 비밀의 방🍓</title>
+    <style>
+        body {
+            background-color: #fff8dc;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header, #password-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #ff6f91;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ffccd5;
+            padding-bottom: 5px;
+        }
+        nav {
+            text-align: center;
+            margin: 20px 0;
+        }
+        nav span {
+            font-size: 2rem;
+            margin: 0 15px;
+            cursor: pointer;
+        }
+        section {
+            display: none;
+            padding: 20px;
+        }
+        section.active {
+            display: block;
+        }
+        textarea {
+            width: 95%;
+            height: 100px;
+            margin: 10px 0;
+            border-radius: 10px;
+            font-size: 1rem;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .diary-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        .diary-grid div {
+            border: 1px solid #ccc;
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+        .entry {
+            background-color: #fff;
+            margin: 10px 0;
+            border: 1px dashed #aaa;
+            padding: 10px;
+            border-radius: 10px;
+            position: relative;
+        }
+        .entry button {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+        }
+        audio {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .emotion-bar span {
+            font-size: 1.5rem;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .tag {
+            display: inline-block;
+            background-color: #ffccd5;
+            color: #333;
+            padding: 3px 8px;
+            margin: 5px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        #password-section input {
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+        }
+        #password-section button {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #ffcccb;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="password-section">
+        <h1>🔐 비밀의 방 입장 비밀번호를 입력해줘 🍓</h1>
+        <input type="password" id="password-input" placeholder="비밀번호 입력">
+        <button onclick="checkPassword()">입장</button>
+    </div>
+
+    <div id="main-content" style="display:none;">
+        <header>
+            <h1>쉿 ! Yewon’s 비밀의 방🍓</h1>
+        </header>
+        <nav>
+            <span onclick="showSection('diary')">🍓</span>
+            <span onclick="showSection('bamboo')">🍓</span>
+            <span onclick="showSection('insight')">🍓</span>
+        </nav>
+
+        <section id="diary">
+            <h2>📝 다이어리</h2>
+            <div class="diary-grid" id="calendar"></div>
+            <h3 id="selected-date-title"></h3>
+            <div class="emotion-bar">
+                감정 선택:
+                <span onclick="setEmotion('😄')">😄</span>
+                <span onclick="setEmotion('😢')">😢</span>
+                <span onclick="setEmotion('😠')">😠</span>
+                <span onclick="setEmotion('😍')">😍</span>
+                <span onclick="setEmotion('😎')">😎</span>
+            </div>
+            <div id="selected-emotion" style="font-size: 1.5rem; margin-top: 5px;"></div>
+            <textarea id="diary-entry" placeholder="오늘의 일기..."></textarea><br>
+            <button onclick="saveDiary()">저장</button>
+            <button onclick="deleteDiary()">삭제</button>
+        </section>
+
+        <section id="bamboo">
+            <h2>🎋 대나무숲</h2>
+            <textarea id="bamboo-input" placeholder="고민을 적어봐요..."></textarea><br>
+            <button onclick="addBamboo()">등록</button>
+            <div id="bamboo-list"></div>
+        </section>
+
+        <section id="insight">
+            <h2>💡 인사이트</h2>
+            <textarea id="insight-input" placeholder="오늘의 영감, 글귀 등을 적어봐요..."></textarea><br>
+            <input id="insight-tags" placeholder="#태그 #기록" style="width: 90%; padding: 8px; border-radius: 10px; border: 1px solid #ccc;"><br>
+            <button onclick="addInsight()">등록</button>
+            <div id="insight-list"></div>
+        </section>
+
+        <audio id="bgm" controls loop>
+            <source src="bgm.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        let currentDate = "";
+        let currentEmotion = "";
+
+        
+function checkPassword() {
+    const input = document.getElementById("password-input").value;
+    if (input === "0303") {
+        document.getElementById("password-section").style.display = "none";
+        document.getElementById("main-content").style.display = "block";
+
+        const bgm = document.getElementById("bgm");
+        bgm.volume = 0.7;
+
+        bgm.play().then(() => {
+            console.log("🎵 음악 자동 재생 성공!");
+        }).catch((e) => {
+            alert("⚠️ 음악 자동 재생이 차단되었어요! 아래 플레이 버튼을 눌러주세요 🎧");
+            console.warn("재생 실패 이유:", e);
+        });
+
+        setupCalendar();
+        renderList("bamboo", "bamboo-list");
+        renderList("insight", "insight-list");
+        showSection("diary");
+    } else {
+        alert("비밀번호가 틀렸어요! 다시 확인해줘요 🍒");
+    }
+}
+
+            const input = document.getElementById("password-input").value;
+            if (input === "0303") {
+                document.getElementById("password-section").style.display = "none";
+                document.getElementById("main-content").style.display = "block";
+                const audio = document.getElementById("bgm"); audio.volume = 0.7; audio.play().catch(e => console.log("Autoplay failed:", e));
+                setupCalendar();
+                renderList("bamboo", "bamboo-list");
+                renderList("insight", "insight-list");
+                showSection("diary");
+            } else {
+                alert("비밀번호가 틀렸어요! 다시 확인해줘요 🍒");
+            }
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        
+        function setupCalendar() {
+            const calendar = document.getElementById("calendar");
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth(); // 0-based index
+
+            const firstDay = new Date(year, month, 1).getDay(); // 요일 (0=일요일)
+            const totalDays = new Date(year, month + 1, 0).getDate(); // 그 달의 마지막 날짜
+
+            calendar.innerHTML = "";
+            document.getElementById("selected-date-title").innerText = year + "년 " + (month + 1) + "월";
+
+            for (let i = 0; i < firstDay; i++) {
+                const blank = document.createElement("div");
+                calendar.appendChild(blank);
+            }
+
+            for (let i = 1; i <= totalDays; i++) {
+                const day = document.createElement("div");
+                day.innerText = i;
+                day.onclick = () => selectDateDynamic(year, month + 1, i);
+                calendar.appendChild(day);
+            }
+        }
+
+        function selectDateDynamic(year, month, day) {
+            const dayStr = day < 10 ? "0" + day : day;
+            const monthStr = month < 10 ? "0" + month : month;
+            currentDate = year + "-" + monthStr + "-" + dayStr;
+            document.getElementById("selected-date-title").innerText = currentDate + "의 일기";
+            document.getElementById("diary-entry").value = localStorage.getItem("diary-" + currentDate) || "";
+            const emotion = localStorage.getItem("emotion-" + currentDate) || "";
+            currentEmotion = emotion;
+            document.getElementById("selected-emotion").innerText = emotion;
+        }
+
+            const calendar = document.getElementById("calendar");
+            calendar.innerHTML = "";
+            for (let i = 1; i <= 30; i++) {
+                const day = document.createElement("div");
+                day.innerText = i;
+                day.onclick = () => selectDate(i);
+                calendar.appendChild(day);
+            }
+        }
+
+        function selectDate(day) {
+            currentDate = "2025-04-" + (day < 10 ? "0" + day : day);
+            document.getElementById("selected-date-title").innerText = currentDate + "의 일기";
+            document.getElementById("diary-entry").value = localStorage.getItem("diary-" + currentDate) || "";
+            const emotion = localStorage.getItem("emotion-" + currentDate) || "";
+            currentEmotion = emotion;
+            document.getElementById("selected-emotion").innerText = emotion;
+        }
+
+        function setEmotion(e) {
+            currentEmotion = e;
+            document.getElementById("selected-emotion").innerText = e;
+        }
+
+        function saveDiary() {
+            if (currentDate) {
+                localStorage.setItem("diary-" + currentDate, document.getElementById("diary-entry").value);
+                localStorage.setItem("emotion-" + currentDate, currentEmotion);
+                alert("저장 완료 🍒");
+            }
+        }
+
+        function deleteDiary() {
+            if (currentDate) {
+                localStorage.removeItem("diary-" + currentDate);
+                localStorage.removeItem("emotion-" + currentDate);
+                document.getElementById("diary-entry").value = "";
+                document.getElementById("selected-emotion").innerText = "";
+                alert("삭제 완료 🗑️");
+            }
+        }
+
+        function addBamboo() {
+            const val = document.getElementById("bamboo-input").value.trim();
+            if (val === "") return;
+            const id = "bamboo-" + Date.now();
+            localStorage.setItem(id, val);
+            document.getElementById("bamboo-input").value = "";
+            renderList("bamboo", "bamboo-list");
+        }
+
+        function addInsight() {
+            const val = document.getElementById("insight-input").value.trim();
+            const tags = document.getElementById("insight-tags").value.trim();
+            if (val === "") return;
+            const id = "insight-" + Date.now();
+            localStorage.setItem(id, JSON.stringify({text: val, tags: tags}));
+            document.getElementById("insight-input").value = "";
+            document.getElementById("insight-tags").value = "";
+            renderList("insight", "insight-list");
+        }
+
+        function renderList(prefix, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = "";
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith(prefix)) {
+                    const div = document.createElement("div");
+                    div.className = "entry";
+
+                    if (prefix === "insight") {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        div.innerHTML = "<b>" + data.text + "</b><br>";
+                        data.tags.split(" ").forEach(t => {
+                            if (t.trim()) {
+                                const tag = document.createElement("span");
+                                tag.className = "tag";
+                                tag.innerText = t;
+                                div.appendChild(tag);
+                            }
+                        });
+                    } else {
+                        div.innerText = localStorage.getItem(key);
+                    }
+
+                    const btn = document.createElement("button");
+                    btn.innerText = "삭제";
+                    btn.onclick = () => {
+                        localStorage.removeItem(key);
+                        renderList(prefix, containerId);
+                    };
+                    div.appendChild(btn);
+                    container.appendChild(div);
+                }
+            });
+        }
+    
+document.addEventListener("DOMContentLoaded", () => {
+    const enterBtn = document.querySelector("button[onclick='checkPassword()']");
+    if (enterBtn) {
+        enterBtn.removeAttribute("onclick");
+        enterBtn.addEventListener("click", checkPassword);
+    }
+});
+</script>
+
+</body>
+</html>
